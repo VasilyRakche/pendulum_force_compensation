@@ -123,7 +123,6 @@ void mycontroller(const mjModel* m, mjData* d)
       if (m->actuator_group[i] == 777) {                                                         
         d->qfrc_applied[i] = d->qfrc_bias[i];
       } else {
-        // For RIGID Motor control is directly applied (as a torque)
         d->qfrc_applied[i] = 0;
       }
     }
