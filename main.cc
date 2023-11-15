@@ -213,7 +213,6 @@ int main(int argc, const char** argv)
 
         if (d->time>=simend)
         {
-           fclose(fid);
            break;
          }
 

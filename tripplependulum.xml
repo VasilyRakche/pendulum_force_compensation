@@ -4,11 +4,7 @@
 		<flag sensornoise="disable" energy="enable" contact="disable" />
 	</option>
 
-	<!-- Number of user parameters for each actuator -->
-	<!-- nuser_actuator stores: clutch_spring, clutch_link, spring_stiffnes, spring_inertia, motor_inertia, joint_damping -->
-	<!-- nkey specifies the key configurations to store -->
-	<!-- size(nuserdata)=[2*nu] - to have enough space for clutches for all actuators -->
-	<size nuser_actuator="7" nkey="1" nuserdata="6"/> 
+	<size nkey="1" /> 
 	
 	<keyframe>
     	<key name="q0" qpos="0.5 0 0"/>				
@@ -39,14 +35,10 @@
 	</worldbody>
 
 	<!-- Actuator descriptions -->
-	<!-- BSA actuator marked as group 777 -->
-	<!-- TODO: Introduce support for Joint friction -->
-	<!-- Actuator user parameters: c_spring, c_link, k_stiffnes, J_psi, J_theta, joint_damping-->
 	<actuator>
-		<general joint="joint_0" name="ACT0" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="1 1 15 1e-5 1e-5 1e-3"/>
-		<general joint="joint_1" name="RIGID1" gaintype="user" dyntype="user" biastype="user" actdim="4" user="1 1 1 1e-5 1e-5 1e-3"/>
-		<!-- <general joint="joint_1" name="BSA1" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="0 1 2 1e-5 1e-5 1e-3"/> -->
-		<general joint="joint_2" name="ACT2" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="0 1 1 1e-5 1e-5 1e-3"/>
+		<general joint="joint_0" name="ACT0" group="777"/>
+		<general joint="joint_1" name="RIGID1" />
+		<general joint="joint_2" name="ACT2" group="777"/>
 	</actuator>
 
 	<!-- Available sensors -->
