@@ -1,0 +1,4 @@
+bin/
+MJDATA.TXT
+MUJOCO_LOG.TXT
+.DS_Store

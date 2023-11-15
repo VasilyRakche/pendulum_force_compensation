@@ -1,0 +1,18 @@
+#!/bin/bash
+clear
+
+# Get command line arguments
+while [ $# -gt 0 ] ; do
+  case $1 in
+    -marg | --makeargument) makeargument="$2";;
+  esac
+  shift
+done
+
+echo "Make argument provided : $makeargument";
+
+set -e # stop if there are errors
+
+make $makeargument clean
+make $makeargument
+cd bin && ./dbpendulum

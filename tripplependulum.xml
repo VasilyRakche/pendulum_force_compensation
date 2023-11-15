@@ -1,0 +1,63 @@
+<mujoco>
+	<!-- Solver options -->
+	<option timestep="0.0001" integrator="RK4" >
+		<flag sensornoise="disable" energy="enable" contact="disable" />
+	</option>
+
+	<!-- Number of user parameters for each actuator -->
+	<!-- nuser_actuator stores: clutch_spring, clutch_link, spring_stiffnes, spring_inertia, motor_inertia, joint_damping -->
+	<!-- nkey specifies the key configurations to store -->
+	<!-- size(nuserdata)=[2*nu] - to have enough space for clutches for all actuators -->
+	<size nuser_actuator="7" nkey="1" nuserdata="6"/> 
+	
+	<keyframe>
+    	<key name="q0" qpos="0.5 0 0"/>				
+  	</keyframe>
+	
+	<worldbody>
+        <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
+		<geom type="plane" size="1 1 0.1" rgba=".9 0 0 1"/>
+		<body pos="0 0 1.5" euler="0 0 0">
+			<joint name="joint_0" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+
+			<geom type="cylinder" size="0.02 0.2" rgba="0 .9 0 1" mass="1"/>
+			<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000453 0.000453 0.000453"/>
+			<body pos="0 0 0.4" euler="0 0 0">
+				<joint name="joint_1" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+
+				<geom type="cylinder" size="0.02 0.2" rgba="0 0 .9 1" mass="1"/>
+				<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000492 0.000492 0.000492"/>
+				<body pos="0 0 0.4" euler="0 0 0">
+					<joint name="joint_2" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+
+					<geom type="cylinder" size="0.02 0.2" rgba=".9 0 0 1" mass="1"/>
+					<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000492 0.000492 0.000492"/>
+					<site name="endeff" pos="0 0 0.2" size="0.03"/>
+				</body>
+			</body>
+		</body>
+	</worldbody>
+
+	<!-- Actuator descriptions -->
+	<!-- BSA actuator marked as group 777 -->
+	<!-- TODO: Introduce support for Joint friction -->
+	<!-- Actuator user parameters: c_spring, c_link, k_stiffnes, J_psi, J_theta, joint_damping-->
+	<actuator>
+		<general joint="joint_0" name="ACT0" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="1 1 15 1e-5 1e-5 1e-3"/>
+		<general joint="joint_1" name="RIGID1" gaintype="user" dyntype="user" biastype="user" actdim="4" user="1 1 1 1e-5 1e-5 1e-3"/>
+		<!-- <general joint="joint_1" name="BSA1" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="0 1 2 1e-5 1e-5 1e-3"/> -->
+		<general joint="joint_2" name="ACT2" gaintype="user" dyntype="user" biastype="user" group="777" actdim="4" user="0 1 1 1e-5 1e-5 1e-3"/>
+	</actuator>
+
+	<!-- Available sensors -->
+	<sensor>
+		<jointpos joint="joint_0"/>
+		<jointvel joint="joint_0"/>
+
+		<jointpos joint="joint_1"/>
+		<jointvel joint="joint_1"/>
+
+		<jointpos joint="joint_2"/>
+		<jointvel joint="joint_2"/>
+	</sensor>
+</mujoco>
