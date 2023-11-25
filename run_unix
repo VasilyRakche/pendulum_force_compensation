@@ -1,18 +1,28 @@
 #!/bin/bash
 clear
 
+# By default only builds the project
+run="false";
+
 # Get command line arguments
 while [ $# -gt 0 ] ; do
   case $1 in
+    -run) run="true";;
     -marg | --makeargument) makeargument="$2";;
   esac
   shift
 done
 
-echo "Make argument provided : $makeargument";
+if [ ! -z $makeargument]; then
+  echo "Make argument provided : $makeargument";
+fi
 
 set -e # stop if there are errors
 
 make $makeargument clean
 make $makeargument
-cd bin && ./dbpendulum
+
+if [ $run = "true" ]; then
+  echo "Running the script...";
+  ./bin/dbpendulum;
+fi

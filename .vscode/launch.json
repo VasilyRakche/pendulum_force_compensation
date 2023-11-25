@@ -1,0 +1,80 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // Taken from: https://stackoverflow.com/a/58779252
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pusk", //I named it Pusk because i can 
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/dbpendulum", //path to your programs exe and exe name
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                "name": "LD_LIBRARY_PATH",
+                "value": "${LD_LIBRARY_PATH}:${workspaceFolder}/../../lib"
+                }
+                ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Prerun script"
+        },
+        {
+            "name": "Pusk no build", //I named it Pusk because i can 
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/dbpendulum", //path to your programs exe and exe name
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                "name": "LD_LIBRARY_PATH",
+                "value": "${LD_LIBRARY_PATH}:${workspaceFolder}/../../lib"
+                }
+                ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "type": "cortex-debug",
+//             "request": "launch",
+//             "servertype": "openocd",
+//             "cwd": "${workspaceRoot}/",
+//             "executable": "${workspaceRoot}/build/stm32f10x.elf",
+//             "name": "Debug (OpenOCD)",
+//             "device": "STM32F103C8T6",
+//             "configFiles": ["${workspaceRoot}/.stm_cfg/stm32f103c8t6.cfg"],
+//             "armToolchainPath": "/home/vasko/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/",
+//             "svdFile": "${workspaceFolder}/.stm_cfg/STM32F103xx.svd",
+//             "runToMain": true,
+//             "debuggerArgs": ["--command=${workspaceFolder}/.stm_cfg/.gdbinit"]
+//         }
+//     ]
+// }

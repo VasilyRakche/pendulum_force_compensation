@@ -8,12 +8,12 @@ OFILES = $(SOURCES:.cc=.o)
 
 #LINUX
 # COMPILE_LEVEL := O2 # optimization of code
-ifndef $(COMPILE_LEVEL)
+ifndef COMPILE_LEVEL
 	DEBUG_BUILD := -g
 	COMPILE_LEVEL := O0 #disable optimization
 endif
 
-CPPFLAGS= $(DEBUG_BUILD) -$(COMPILE_LEVEL) -I../../include -L../../bin -std=c++17 -mavx -pthread -Wl,-rpath,'$$ORIGIN'
+CPPFLAGS= $(DEBUG_BUILD) -$(COMPILE_LEVEL) -I../../include -I/usr/include/eigen3 -L../../bin -L../../lib -std=c++17 -mavx -pthread -Wl,-rpath,'$$ORIGIN'
 CXXFLAGS = -lmujoco -lGL -lm -lglfw
 
 FOLDER = bin

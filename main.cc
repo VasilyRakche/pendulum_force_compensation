@@ -4,26 +4,31 @@
 //#include<unistd.h> //for usleep
 //#include <math.h>
 #include <sstream>
+#include <Eigen/Dense>
 
-
-#include "mujoco/mujoco.h"
+#include <mujoco/mujoco.h>
+#include <mujoco/mjtnum.h>
+#include <map>
 #include "GLFW/glfw3.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 
-//simulation end time
-double simend = 5;
-
 #define ndof 2
+#define SPECIAL_GROUP 777
+#define IS_SPECIAL_INSTANCE(model, instance) \
+    (model->actuator_group[instance] == SPECIAL_GROUP)
 
 //related to writing data to a file
 int loop_index = 0;
 const int data_frequency = 50; //frequency at which data is written to a file
+static mjtNum K_act = 15;
+static mjtNum q_b = 0.01;
 
+char xmlpath[] = "./tripplependulum.xml";
 
-char xmlpath[] = "../tripplependulum.xml";
-
+typedef Eigen::Matrix<mjtNum, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixXn_t;
+typedef Eigen::Matrix<mjtNum, Eigen::Dynamic, 1> VectorXn_t;
 
 // MuJoCo data structures
 mjModel* m = NULL;                  // MuJoCo model
@@ -115,18 +120,26 @@ void scroll(GLFWwindow* window, double xoffset, double yoffset)
     mjv_moveCamera(m, mjMOUSE_ZOOM, 0, -0.05*yoffset, &scn, &cam);
 }
 
+mjtNum custom_gain(const mjModel *m, const mjData *d, int instance) {
+    // In forward computation gain is used as follows: gain*act[end]
+    // For activation dimensions bigger than 1,
+    // the last element is used to generate force.
+    // scalar_force = gain_term * (act or ctrl) + bias_term
+    return 0;  // question if needed for this kind of dynamics
+}
+
+mjtNum custom_bias(const mjModel *m, const mjData *d, int instance) {
+    // In forward computation bias is used as follows: gain*act[end] + bias
+    return 0;
+}
+
 //**************************
 void mycontroller(const mjModel* m, mjData* d)
 {
-  //write control here
-    for (int i=0; i<m->nv; i++) {
-      if (m->actuator_group[i] == 777) {                                                         
-        d->qfrc_applied[i] = d->qfrc_bias[i];
-      } else {
-        d->qfrc_applied[i] = 0;
-      }
-    }
+  // Write control here
 
+  // Not implemented to show the custom dynamics
+  // on its own
 
   if ( loop_index%data_frequency==0) {
     std::printf("q1:%f\tq2:%f\tq3:%f\n",d->qpos[0],d->qpos[1],d->qpos[2]);
@@ -135,6 +148,56 @@ void mycontroller(const mjModel* m, mjData* d)
   loop_index = loop_index + 1;
 }
 
+mjtNum custom_dynamics(const mjModel *m, const mjData *d, int instance) {
+
+    if (instance == m->njnt - 1) {
+        // only in last actuator instance update all actuators
+        Eigen::Map<VectorXn_t> qfrc_bias(d->qfrc_bias, m->nv);
+        Eigen::Map<VectorXn_t> qfrc_constraint(d->qfrc_constraint, m->nv);
+        Eigen::Map<VectorXn_t> qfrc_ctrl(d->ctrl, m->nv);
+        // VectorXn_t qfrc_ctrl = VectorXn_t::Zero(m->nv);    
+        VectorXn_t qfrc_damp = VectorXn_t::Zero(m->nv);    
+
+        // Compute control forces
+        for (int i = 0; i < m->nv; i++) {
+            mjtNum *act = d->act + m->actuator_actadr[i];
+
+            qfrc_ctrl[i] = K_act * act[1]; // Ctrl is acting through double integrator
+            qfrc_damp[i] = q_b * d->qvel[i]; // Custom dumping
+        }
+
+        // Mass matrix
+        mjtNum mjt_qM_dense[m->nv * m->nv];  // array to hold qM
+        mj_fullM(m, mjt_qM_dense, d->qM);    // qM originally provided as sparse
+        Eigen::Map<MatrixXn_t> B(mjt_qM_dense, m->nv,
+                                        m->nv);  // create eigen matrix
+        MatrixXn_t B_inv = B.inverse();
+
+        // Selector matrix to chose joint for which to compensate all external forces
+        MatrixXn_t c_sel(1, m->nv);
+        c_sel << 1, 0, 0;
+
+        // Forces to compensate all external forces
+        MatrixXn_t M_c = c_sel * B_inv * c_sel.transpose();
+        VectorXn_t qfrc_all = qfrc_bias + qfrc_damp - qfrc_constraint - qfrc_ctrl;
+        VectorXn_t Lambda = M_c.inverse() * c_sel * B_inv * qfrc_all;
+        VectorXn_t qfrc_compensation_forces = c_sel.transpose() * Lambda;
+
+        // Apply control and compensation forces
+        for (int i = 0; i < m->nv; i++) {
+            mjtNum *act = d->act + m->actuator_actadr[i];			
+            mjtNum *act_dot = d->act_dot + m->actuator_actadr[i];			
+
+            act_dot[0] = d->ctrl[i];  					                                    // ctrl first integrator
+            act_dot[1] = act[0];  					                                        // ctrl second integrator
+
+            d->qfrc_applied[i] = qfrc_compensation_forces[i] - qfrc_damp[i] + qfrc_ctrl[i]; // + constraints - bias (addded by mujoco) // qforces
+        }
+    }
+
+    // ddq will be calculated by MuJuCo after applying the input
+    return -1;  // ignored by caller in the case of nact>1
+}
 
 //************************
 // main function
@@ -158,7 +221,6 @@ int main(int argc, const char** argv)
 
     // make data
     d = mj_makeData(m);
-
 
     // init GLFW
     if( !glfwInit() )
@@ -192,11 +254,19 @@ int main(int argc, const char** argv)
     cam.lookat[1] = arr_view[4];
     cam.lookat[2] = arr_view[5];
 
-    // install control callback
+    // Install control callback
     mjcb_control = mycontroller;
 
-    d->qpos[0] = 0.5;
-    //d->qpos[1] = 0;
+    // Global functions
+    mjcb_act_dyn = custom_dynamics;
+    mjcb_act_gain = custom_gain;
+    mjcb_act_bias = custom_bias;
+
+    // set initial position from xml model file
+    mju_copy(d->qpos, m->key_qpos, m->nq); 
+    // read time from keyframe (assume that it corresponds to end-time)
+    mjtNum simend = *m->key_time;
+    
     // use the first while condition if you want to simulate for a period.
     while( !glfwWindowShouldClose(window))
     {

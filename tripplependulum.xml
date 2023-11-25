@@ -4,27 +4,28 @@
 		<flag sensornoise="disable" energy="enable" contact="disable" />
 	</option>
 
+	<compiler angle="radian"/>
 	<size nkey="1" /> 
 	
 	<keyframe>
-    	<key name="q0" qpos="0.5 0 0"/>				
+    	<key name="q0" qpos="0.5 0 0" time="50"/>				
   	</keyframe>
 	
 	<worldbody>
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
 		<geom type="plane" size="1 1 0.1" rgba=".9 0 0 1"/>
 		<body pos="0 0 1.5" euler="0 0 0">
-			<joint name="joint_0" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+			<joint name="joint_0" range="-0.6 0.6" axis = "1 0 0" pos="0 0 -0.2"/>
 
 			<geom type="cylinder" size="0.02 0.2" rgba="0 .9 0 1" mass="1"/>
 			<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000453 0.000453 0.000453"/>
 			<body pos="0 0 0.4" euler="0 0 0">
-				<joint name="joint_1" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+				<joint name="joint_1" axis = "1 0 0" pos="0 0 -0.2"/>
 
 				<geom type="cylinder" size="0.02 0.2" rgba="0 0 .9 1" mass="1"/>
 				<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000492 0.000492 0.000492"/>
 				<body pos="0 0 0.4" euler="0 0 0">
-					<joint name="joint_2" type="hinge" axis = "1 0 0" pos="0 0 -0.2"/>
+					<joint name="joint_2" axis = "1 0 0" pos="0 0 -0.2"/>
 
 					<geom type="cylinder" size="0.02 0.2" rgba=".9 0 0 1" mass="1"/>
 					<inertial pos = "0 0 0" mass = "1" diaginertia = "0.000492 0.000492 0.000492"/>
@@ -36,9 +37,9 @@
 
 	<!-- Actuator descriptions -->
 	<actuator>
-		<general joint="joint_0" name="ACT0" group="777"/>
-		<general joint="joint_1" name="RIGID1" />
-		<general joint="joint_2" name="ACT2" group="777"/>
+		<general joint="joint_0" name="ACT0" gaintype="user" dyntype="user" biastype="user" actdim="2" group="777"/>
+		<general joint="joint_1" name="RIGID1" gaintype="user" dyntype="user" biastype="user" actdim="2" />
+		<general joint="joint_2" name="ACT2" gaintype="user" dyntype="user" biastype="user" actdim="2" group="777"/>
 	</actuator>
 
 	<!-- Available sensors -->
